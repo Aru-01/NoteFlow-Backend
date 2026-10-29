@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title }}</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #0d1117;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+        color: #e6edf3;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrapper {
+        width: 100%;
+        background-color: #0d1117;
+        padding: 40px 15px;
+      }
+      .card {
+        max-width: 480px;
+        margin: 0 auto;
+        background-color: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 16px;
+        padding: 36px 32px;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+      }
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 24px;
+      }
+      .brand-badge {
+        display: inline-block;
+        width: 36px;
+        height: 36px;
+        line-height: 36px;
+        text-align: center;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 18px;
+      }
+      .brand-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: -0.5px;
+        margin-left: 8px;
+        vertical-align: middle;
+      }
+      .greeting {
+        font-size: 15px;
+        color: #8b949e;
+        margin-bottom: 8px;
+      }
+      .heading {
+        font-size: 22px;
+        font-weight: 700;
+        color: #f0f6fc;
+        margin: 0 0 16px 0;
+        letter-spacing: -0.3px;
+      }
+      .description {
+        font-size: 14px;
+        line-height: 1.6;
+        color: #c9d1d9;
+        margin-bottom: 28px;
+      }
+      .otp-container {
+        background: #0d1117;
+        border: 1px dashed #388bfd;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        margin: 24px 0;
+      }
+      .otp-code {
+        font-family:
+          "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+          monospace;
+        font-size: 36px;
+        font-weight: 800;
+        letter-spacing: 10px;
+        color: #58a6ff;
+        display: inline-block;
+        padding-left: 10px;
+      }
+      .meta-box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        color: #8b949e;
+        margin-top: 12px;
+      }
+      .meta-box span {
+        background-color: #21262d;
+        padding: 6px 14px;
+        border-radius: 20px;
+        border: 1px solid #30363d;
+        display: inline-block;
+      }
+      .divider {
+        height: 1px;
+        background-color: #30363d;
+        margin: 28px 0 20px 0;
+      }
+      .footer-note {
+        font-size: 12px;
+        line-height: 1.5;
+        color: #8b949e;
+        text-align: center;
+      }
+      .footer-brand {
+        margin-top: 12px;
+        font-size: 11px;
+        color: #6e7681;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="card">
+        <div class="brand">
+          <span class="brand-badge">N</span>
+          <span class="brand-name">NoteFlow</span>
+        </div>
+
+        <div class="greeting">Hello, {{ username }}</div>
+        <h1 class="heading">{{ title }}</h1>
+        <p class="description">{{ message }}</p>
+
+        <div class="otp-container">
+          <div class="otp-code">{{ otp_code }}</div>
+        </div>
+
+        <div class="meta-box" style="text-align: center">
+          <span>⏱️ Valid for {{ expiry_minutes }} minutes only</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <p class="footer-note">
+          If you did not request this verification code, please ignore this
+          email or contact support if you suspect unauthorized access.
+        </p>
+        <p class="footer-brand">
+          &copy; NoteFlow &bull; Secure Role-Based Note-Taking Platform
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
