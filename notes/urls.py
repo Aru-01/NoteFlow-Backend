@@ -1,6 +1,9 @@
 from django.urls import path
+from .views import NoteDetailView, NoteListCreateView
+
+app_name = "notes"
 
 urlpatterns = [
-    # Note CRUD endpoints will be defined here
+    path("", NoteListCreateView.as_view(), name="note-list-create"),
+    path("<int:pk>/", NoteDetailView.as_view(), name="note-detail"),
 ]
-
