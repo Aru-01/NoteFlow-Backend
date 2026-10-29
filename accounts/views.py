@@ -26,13 +26,16 @@ class RegisterView(generics.CreateAPIView):
     """
     Registers a new user in unverified state and sends a 6-digit verification OTP.
     """
+
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
 
     @extend_schema(
         summary="User Registration",
         description="Registers a new user and sends a 6-digit OTP to the registered email.",
-        responses={201: OpenApiResponse(description="Registration successful, OTP dispatched.")},
+        responses={
+            201: OpenApiResponse(description="Registration successful, OTP dispatched.")
+        },
     )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -58,6 +61,7 @@ class VerifyOTPView(views.APIView):
     """
     Verifies 6-digit OTP code and removes it from the database immediately.
     """
+
     permission_classes = [AllowAny]
 
     @extend_schema(
@@ -72,7 +76,11 @@ class VerifyOTPView(views.APIView):
         user = serializer.validated_data["user"]
         purpose = serializer.validated_data["purpose"]
 
-        action_msg = "Account verified successfully. You can now log in." if purpose == OTPPurpose.REGISTRATION else "OTP verified successfully. You may proceed."
+        action_msg = (
+            "Account verified successfully. You can now log in."
+            if purpose == OTPPurpose.REGISTRATION
+            else "OTP verified successfully. You may proceed."
+        )
 
         return Response(
             {
@@ -91,6 +99,7 @@ class ResendOTPView(views.APIView):
     """
     Regenerates a fresh 6-digit OTP and deletes any previous stale OTP.
     """
+
     permission_classes = [AllowAny]
 
     @extend_schema(
@@ -122,6 +131,7 @@ class LoginView(TokenObtainPairView):
     Authenticates user and returns JWT access & refresh tokens.
     Rejects users whose email OTP is not yet verified.
     """
+
     serializer_class = CustomTokenObtainPairSerializer
 
     @extend_schema(
@@ -136,6 +146,7 @@ class PasswordResetRequestView(views.APIView):
     """
     Initiates password recovery by sending a 6-digit OTP to the user's email.
     """
+
     permission_classes = [AllowAny]
 
     @extend_schema(
@@ -149,8 +160,12 @@ class PasswordResetRequestView(views.APIView):
         email = serializer.validated_data["email"]
 
         user = User.objects.get(email=email)
-        otp_instance = OTPVerification.generate_otp(user=user, purpose=OTPPurpose.PASSWORD_RESET)
-        send_otp_email(user=user, otp_code=otp_instance.otp_code, purpose=OTPPurpose.PASSWORD_RESET)
+        otp_instance = OTPVerification.generate_otp(
+            user=user, purpose=OTPPurpose.PASSWORD_RESET
+        )
+        send_otp_email(
+            user=user, otp_code=otp_instance.otp_code, purpose=OTPPurpose.PASSWORD_RESET
+        )
 
         return Response(
             {
@@ -165,6 +180,7 @@ class PasswordResetConfirmView(views.APIView):
     """
     Validates OTP and updates the user's password. Consumes and deletes the OTP.
     """
+
     permission_classes = [AllowAny]
 
     @extend_schema(
@@ -190,6 +206,7 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     """
     View or update the authenticated user's profile (interests, username).
     """
+
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated, IsVerifiedUser]
 
@@ -205,6 +222,7 @@ class AdminUserListCreateView(generics.ListCreateAPIView):
     """
     Admin endpoint to list all users (paginated & indexed) or create a new user with any role.
     """
+
     serializer_class = AdminUserSerializer
     permission_classes = [IsAuthenticated, IsAdminUserRole]
     queryset = User.objects.all().order_by("-created_at")
@@ -225,6 +243,7 @@ class AdminUserDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     Admin endpoint to view, update, or remove any user.
     """
+
     serializer_class = AdminUserSerializer
     permission_classes = [IsAuthenticated, IsAdminUserRole]
     queryset = User.objects.all()

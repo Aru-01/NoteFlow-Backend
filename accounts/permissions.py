@@ -6,6 +6,7 @@ class IsAdminUserRole(permissions.BasePermission):
     Allows access only to authenticated users who have the 'admin' role
     or superuser status.
     """
+
     message = "Only administrators have access to this resource."
 
     def has_permission(self, request, view):
@@ -20,13 +21,12 @@ class IsVerifiedUser(permissions.BasePermission):
     """
     Allows access only to users who have completed email OTP verification.
     """
+
     message = "Your email address is not verified. Please verify your OTP first."
 
     def has_permission(self, request, view):
         return bool(
-            request.user
-            and request.user.is_authenticated
-            and request.user.is_verified
+            request.user and request.user.is_authenticated and request.user.is_verified
         )
 
 

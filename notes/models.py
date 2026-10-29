@@ -21,6 +21,7 @@ class Note(models.Model):
     Note model with priority, lifecycle status, timeframe tracking,
     and optimized indexes for list and read operations.
     """
+
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -74,7 +75,9 @@ class Note(models.Model):
         verbose_name_plural = "Notes"
         ordering = ["-created_at"]
         indexes = [
+            # Supports list view for a specific user ordered by creation time
             models.Index(fields=["owner", "-created_at"]),
+            # Supports global admin list view ordered by creation time
             models.Index(fields=["-created_at"]),
         ]
 

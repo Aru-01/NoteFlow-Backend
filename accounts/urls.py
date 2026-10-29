@@ -21,15 +21,24 @@ urlpatterns = [
     path("resend-otp/", ResendOTPView.as_view(), name="resend-otp"),
     path("login/", LoginView.as_view(), name="login"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
-
-    # Password 
-    path("password-reset/request/", PasswordResetRequestView.as_view(), name="password-reset-request"),
-    path("password-reset/confirm/", PasswordResetConfirmView.as_view(), name="password-reset-confirm"),
-
+    # Password
+    path(
+        "password-reset/request/",
+        PasswordResetRequestView.as_view(),
+        name="password-reset-request",
+    ),
+    path(
+        "password-reset/confirm/",
+        PasswordResetConfirmView.as_view(),
+        name="password-reset-confirm",
+    ),
     # Profile
     path("profile/", ProfileView.as_view(), name="profile"),
-
-    # Admin Users Management
-    path("admin/users/", AdminUserListCreateView.as_view(), name="admin-user-list-create"),
-    path("admin/users/<int:pk>/", AdminUserDetailView.as_view(), name="admin-user-detail"),
+    # Admin User Management
+    path(
+        "admin/users/", AdminUserListCreateView.as_view(), name="admin-user-list-create"
+    ),
+    path(
+        "admin/users/<int:pk>/", AdminUserDetailView.as_view(), name="admin-user-detail"
+    ),
 ]

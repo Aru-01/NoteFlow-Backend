@@ -56,6 +56,7 @@ class NoteListCreateView(generics.ListCreateAPIView):
         else:
             queryset = Note.objects.filter(owner=user)
 
+        # Filters
         status_param = self.request.query_params.get("status")
         if status_param:
             queryset = queryset.filter(status=status_param.lower())

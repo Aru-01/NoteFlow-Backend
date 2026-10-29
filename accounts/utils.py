@@ -45,7 +45,9 @@ def send_otp_email(user, otp_code: str, purpose: str):
         html_content = render_to_string("emails/otp_email.html", context)
         plain_message = strip_tags(html_content)
 
-        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "NoteFlow <noreply@noteflow.local>")
+        from_email = getattr(
+            settings, "DEFAULT_FROM_EMAIL", "NoteFlow <noreply@noteflow.local>"
+        )
 
         send_mail(
             subject=subject,
@@ -58,5 +60,7 @@ def send_otp_email(user, otp_code: str, purpose: str):
         return True
     except Exception as e:
         logger.error(f"Failed to send OTP email to {user.email}: {e}")
-        print(f"\n[NoteFlow DEV OTP] To: {user.email} | Purpose: {purpose} | Code: {otp_code} | Expiry: {expiry_minutes}m\n")
+        print(
+            f"\n[NoteFlow DEV OTP] To: {user.email} | Purpose: {purpose} | Code: {otp_code} | Expiry: {expiry_minutes}m\n"
+        )
         return False
