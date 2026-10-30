@@ -7,7 +7,7 @@ A robust, production-ready Django REST API built for technical evaluation. It im
 ## 📌 Tech Stack
 
 - **Framework**: Django 5.2 & Django REST Framework (DRF)
-- **Database**: SQLite (ORM parameterized queries)
+- **Database**: PostgreSQL (Supabase)
 - **Authentication**: JWT (JSON Web Tokens) via `djangorestframework-simplejwt`
 - **Security**: Cryptographic password hashing (PBKDF2 SHA-256), DRF rate limiting/throttling, security headers
 - **API Documentation**: OpenAPI 3.0 / Swagger UI & ReDoc via `drf-spectacular`
