@@ -15,7 +15,7 @@ load_dotenv(BASE_DIR / ".env")
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-default-key-change-me")
 DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "yes")
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost,.vercel.app").split(",") if host.strip()]
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.getenv(
@@ -79,7 +79,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "noteflow.wsgi.application"
+WSGI_APPLICATION = "noteflow.wsgi.app"
 
 # Database Configuration (Supabase PostgreSQL with SQLite fallback)
 DB_HOST = os.getenv("DB_HOST") or os.getenv("host")

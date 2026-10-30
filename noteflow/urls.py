@@ -7,8 +7,12 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
+from .views import HealthCheckView
 
 urlpatterns = [
+    # Health check for uptime / keep-alive (keeps Supabase DB active)
+    path("api/health/", HealthCheckView.as_view(), name="health-check"),
+
     path(
         "",
         RedirectView.as_view(url="/api/v1/docs/", permanent=False),
