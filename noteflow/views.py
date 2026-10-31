@@ -9,15 +9,12 @@ from rest_framework.views import APIView
 
 
 class HealthCheckView(APIView):
-    """
-    Health check endpoint to keep the server and database awake (prevent Supabase sleep mode).
-    Executes a lightweight query on PostgreSQL.
-    """
     permission_classes = [AllowAny]
 
     @extend_schema(
-        summary="Health Check & DB Keep-Alive",
-        description="Checks database connectivity and responds with timestamp and latency to keep Supabase awake.",
+        tags=["system"],
+        summary="Service Health Check",
+        description="Checks database and API availability, returning connectivity status, database engine, and response latency.",
         responses={200: dict},
     )
     def get(self, request, *args, **kwargs):
@@ -48,4 +45,3 @@ class HealthCheckView(APIView):
             return Response(data, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         return Response(data, status=status.HTTP_200_OK)
-

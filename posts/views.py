@@ -1,7 +1,7 @@
 from collections import defaultdict
 from django.contrib.auth import get_user_model
 from django.db.models import Q
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import generics, permissions, status, views
 from rest_framework.response import Response
 
@@ -19,12 +19,6 @@ User = get_user_model()
 
 
 class PostListCreateView(generics.ListCreateAPIView):
-    """
-    List & Create Posts.
-    - Public posts are visible to any user (including anonymous).
-    - In-App (authenticated) posts are visible to logged-in users.
-    - Creating a post requires an authenticated and verified account.
-    """
     def get_serializer_class(self):
         if self.request.method == "POST":
             return PostCreateUpdateSerializer
@@ -36,28 +30,39 @@ class PostListCreateView(generics.ListCreateAPIView):
         return [permissions.AllowAny()]
 
     @extend_schema(
-        summary="List Posts or Create a Post",
-        description=(
-            "List posts with author details and pagination. Unauthenticated visitors "
-            "can read public posts; authenticated users can also read in-app posts."
-        ),
+        tags=["posts"],
+        summary="List Posts",
+        description="Retrieves a paginated list of posts with author details and reaction counts. Unauthenticated visitors see public posts; logged-in users see both public and in-app posts.",
         parameters=[
             OpenApiParameter("privacy", str, description="Filter by privacy: public or authenticated"),
-            OpenApiParameter("author_id", int, description="Filter posts by author ID"),
-            OpenApiParameter("search", str, description="Search keyword in post caption"),
+            OpenApiParameter("author_id", int, description="Filter posts by author user ID"),
+            OpenApiParameter("search", str, description="Search keyword within post caption or author email"),
         ],
+        responses={200: PostSerializer(many=True)},
     )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @extend_schema(
+        tags=["posts"],
+        summary="Create Post",
+        description="Creates a new post with a caption and privacy level (public or authenticated). Requires verified user authentication.",
+        request=PostCreateUpdateSerializer,
+        responses={
+            201: PostSerializer,
+            400: OpenApiResponse(description="Validation error in submitted post data."),
+        },
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
     def get_queryset(self):
         user = self.request.user
         queryset = Post.objects.select_related("author")
 
-        # Privacy  filter
-        if user.is_authenticated:
-            pass
-        else:
+        if not user.is_authenticated:
             queryset = queryset.filter(privacy=PostPrivacy.PUBLIC)
 
-        # Query filter
         privacy_param = self.request.query_params.get("privacy")
         if privacy_param:
             queryset = queryset.filter(privacy=privacy_param.lower())
@@ -79,10 +84,6 @@ class PostListCreateView(generics.ListCreateAPIView):
 
 
 class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    Retrieve, update, or delete a specific post.
-    Authors and Admins can update/delete. Any authorized viewer can retrieve.
-    """
     queryset = Post.objects.select_related("author")
 
     def get_serializer_class(self):
@@ -95,6 +96,60 @@ class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
             return [permissions.IsAuthenticated(), IsVerifiedUser(), IsAuthorOrAdmin()]
         return [permissions.AllowAny()]
 
+    @extend_schema(
+        tags=["posts"],
+        summary="Get Post Details",
+        description="Retrieves details of a specific post including author info and reaction status.",
+        responses={
+            200: PostSerializer,
+            403: OpenApiResponse(description="Post is restricted to authenticated members."),
+            404: OpenApiResponse(description="Post not found."),
+        },
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @extend_schema(
+        tags=["posts"],
+        summary="Full Update Post",
+        description="Updates caption or privacy settings of an existing post. Only the post author or an administrator can perform this action.",
+        request=PostCreateUpdateSerializer,
+        responses={
+            200: PostSerializer,
+            403: OpenApiResponse(description="Permission denied."),
+            404: OpenApiResponse(description="Post not found."),
+        },
+    )
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
+
+    @extend_schema(
+        tags=["posts"],
+        summary="Partial Update Post",
+        description="Partially updates caption or privacy level of an existing post. Only the post author or an administrator can perform this action.",
+        request=PostCreateUpdateSerializer,
+        responses={
+            200: PostSerializer,
+            403: OpenApiResponse(description="Permission denied."),
+            404: OpenApiResponse(description="Post not found."),
+        },
+    )
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)
+
+    @extend_schema(
+        tags=["posts"],
+        summary="Delete Post",
+        description="Permanently deletes a specific post. Only the post author or an administrator can perform this action.",
+        responses={
+            204: OpenApiResponse(description="Post deleted successfully."),
+            403: OpenApiResponse(description="Permission denied."),
+            404: OpenApiResponse(description="Post not found."),
+        },
+    )
+    def delete(self, request, *args, **kwargs):
+        return super().delete(request, *args, **kwargs)
+
     def get_object(self):
         post = super().get_object()
         if post.privacy == PostPrivacy.AUTHENTICATED and not self.request.user.is_authenticated:
@@ -106,17 +161,27 @@ class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class PostReactToggleView(views.APIView):
-    """
-    Toggle reaction on a post.
-    If the user has already reacted with the given type, the reaction is removed.
-    Otherwise, the reaction is recorded and react_count is kept accurate.
-    """
     permission_classes = [permissions.IsAuthenticated, IsVerifiedUser]
 
     @extend_schema(
-        summary="Toggle Reaction on Post",
+        tags=["posts"],
+        summary="Toggle Post Reaction",
+        description="Adds a reaction (e.g. like, love, clap) to a post, or removes it if already reacted with the same type. Keeps reaction count accurate.",
         request=ReactActionSerializer,
-        responses={200: PostSerializer},
+        responses={
+            200: OpenApiResponse(
+                description="Reaction toggled successfully.",
+                response={
+                    "type": "object",
+                    "properties": {
+                        "success": {"type": "boolean"},
+                        "reacted": {"type": "boolean"},
+                        "react_count": {"type": "integer"},
+                    },
+                },
+            ),
+            404: OpenApiResponse(description="Post not found."),
+        },
     )
     def post(self, request, pk, *args, **kwargs):
         try:
@@ -155,21 +220,18 @@ class PostReactToggleView(views.APIView):
 
 
 class UserPostsLookupView(generics.ListAPIView):
-    """
-    Scenario 2 (Aggregation / Join Lookup):
-    Retrieve all posts belonging to a particular user with joined author details.
-    Uses an optimized single-query JOIN (select_related) backed by index (author, -created_at).
-    """
     serializer_class = PostSerializer
     permission_classes = [permissions.AllowAny]
 
     @extend_schema(
-        summary="Scenario 2: User Posts ($lookup Join)",
-        description=(
-            "Retrieves all posts belonging to a particular user. Executes an optimized single "
-            "JOIN query with author metadata supported by composite index (author, -created_at)."
-        ),
+        tags=["posts"],
+        summary="Get Posts by User",
+        description="Retrieves all posts belonging to a particular user with author details. Supports query indexing and pagination.",
+        responses={200: PostSerializer(many=True)},
     )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
     def get_queryset(self):
         user_id = self.kwargs.get("user_id")
         queryset = Post.objects.filter(author_id=user_id).select_related("author")
@@ -181,16 +243,12 @@ class UserPostsLookupView(generics.ListAPIView):
 
 
 class GroupByInterestsView(views.APIView):
-    """
-    Scenario 1 (Aggregation Task):
-    Specific view to see users grouped by interests.
-    Processes user interest arrays in an optimized grouping pipeline.
-    """
     permission_classes = [permissions.AllowAny]
 
     @extend_schema(
-        summary="Scenario 1: Group Users by Interests",
-        description="Aggregates and groups user profiles by their registered interests.",
+        tags=["posts"],
+        summary="Group Users by Interests",
+        description="Retrieves user profiles grouped and indexed by their registered interests list.",
         responses={200: GroupedInterestUserSerializer(many=True)},
     )
     def get(self, request, *args, **kwargs):
